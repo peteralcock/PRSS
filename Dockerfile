@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the Gemfile and Gemfile.lock
-COPY Gemfile Gemfile.lock ./
-
+COPY . .
 # Install Ruby dependencies
 RUN bundle install
 

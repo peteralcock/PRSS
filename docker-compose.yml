@@ -1,7 +1,6 @@
-version: '3.8'
-
 services:
   web:
+    image: app
     build: .
     command: bundle exec ruby app.rb -o 0.0.0.0
     ports:
