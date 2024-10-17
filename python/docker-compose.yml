@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:////usr/src/app/pr_monitoring.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./:/usr/src/app
+      - db-data:/usr/src/app/instance
+    depends_on:
+      - redis
+
+  celery_worker:
+    build: .
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      - DATABASE_URL=sqlite:////usr/src/app/pr_monitoring.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./:/usr/src/app
+      - db-data:/usr/src/app/instance
+    depends_on:
+      - redis
+
+  celery_beat:
+    build: .
+    command: celery -A app.celery beat --loglevel=info
+    environment:
+      - DATABASE_URL=sqlite:////usr/src/app/pr_monitoring.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./:/usr/src/app
+      - db-data:/usr/src/app/instance
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - redis-data:/data
+
+volumes:
+  db-data:
+  redis-data:

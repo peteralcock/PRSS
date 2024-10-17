@@ -1,3 +1,73 @@
+# Git
+.git
+.gitignore
+
+# Ruby-specific ignores
+.bundle
+vendor/bundle
+*.gem
+*.rbc
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Python-specific ignores
+python/__pycache__
+python/*.py[cod]
+python/*$py.class
+python/.Python
+python/build/
+python/develop-eggs/
+python/dist/
+python/downloads/
+python/eggs/
+python/.eggs/
+python/lib/
+python/lib64/
+python/parts/
+python/sdist/
+python/var/
+python/wheels/
+python/*.egg-info/
+python/.installed.cfg
+python/*.egg
+python/MANIFEST
+
+# Node-specific ignores
+nodejs/node_modules
+nodejs/npm-debug.log
+nodejs/yarn-error.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor-specific files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Database files (these should be managed via volumes)
+*.sqlite
+*.sqlite3
+
+# Other unnecessary files
+
 *.gem
 *.rbc
 /.config

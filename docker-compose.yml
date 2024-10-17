@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: bundle exec ruby app.rb -o 0.0.0.0
+    ports:
+      - "4567:4567"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite3:///usr/src/app/pr_monitoring.db
+    volumes:
+      - ./:/usr/src/app
+      - db-data:/usr/src/app/db
+    depends_on:
+      - redis
+
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq -r ./app.rb
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite3:///usr/src/app/pr_monitoring.db
+    volumes:
+      - ./:/usr/src/app
+      - db-data:/usr/src/app/db
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - redis-data:/data
+
+volumes:
+  db-data:
+  redis-data:
