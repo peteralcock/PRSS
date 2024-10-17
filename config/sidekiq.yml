@@ -1,0 +1,4 @@
+:schedule:
+  feed_scheduler:
+    cron: '0 * * * *'  # Runs every hour
+    class: FeedSchedulerWorker
