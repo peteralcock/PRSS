@@ -1,8 +1,7 @@
-# PRSS
-Extract press releases from your competitors and analyze them with AI to generate more competitive marketing and PR strategies.
+# PRSS: Press Release Monitor
+Aggregate RSS feeds and extract press releases from your competitors in order to automatically analyze them with AI to generate competitive marketing/PR strategies for startups and influencers.
 
-
-# PR Monitoring Dashboard
+![Screenshot](/screenshot.jpg?raw=true "Preview")
 
 This application is a full-stack solution for monitoring PR feeds. It includes a Sinatra backend API, Sidekiq workers for background processing, and a React frontend.
 
