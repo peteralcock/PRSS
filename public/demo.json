@@ -1,0 +1,113 @@
+{
+  "feeds": [
+    {
+      "id": 1,
+      "title": "TechCrunch",
+      "url": "http://feeds.feedburner.com/TechCrunch",
+      "category": "Technology"
+    },
+    {
+      "id": 2,
+      "title": "Wired",
+      "url": "https://www.wired.com/feed/rss",
+      "category": "Technology"
+    },
+    {
+      "id": 3,
+      "title": "National Geographic",
+      "url": "https://www.nationalgeographic.com/content/natgeo/en_US/rss/index.rss",
+      "category": "Science"
+    },
+    {
+      "id": 4,
+      "title": "BBC World News",
+      "url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+      "category": "News"
+    },
+    {
+      "id": 5,
+      "title": "NASA",
+      "url": "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+      "category": "Science"
+    }
+  ],
+  "entries": [
+    {
+      "id": 1,
+      "feedId": 1,
+      "title": "SpaceX successfully launches Starlink satellites",
+      "url": "https://techcrunch.com/2023/05/10/spacex-successfully-launches-starlink-satellites/",
+      "content": "SpaceX has successfully launched another batch of Starlink satellites, expanding its global internet coverage.",
+      "publishedAt": "2023-05-10T15:30:00Z",
+      "hashtags": "#SpaceX #Starlink #SatelliteLaunch"
+    },
+    {
+      "id": 2,
+      "feedId": 2,
+      "title": "AI Ethics: Navigating the Future of Artificial Intelligence",
+      "url": "https://www.wired.com/story/ai-ethics-navigating-future-artificial-intelligence/",
+      "content": "As AI becomes more prevalent, experts discuss the ethical considerations and potential regulations needed.",
+      "publishedAt": "2023-05-09T12:45:00Z",
+      "hashtags": "#AI #Ethics #ArtificialIntelligence"
+    },
+    {
+      "id": 3,
+      "feedId": 3,
+      "title": "Newly Discovered Species in the Amazon Rainforest",
+      "url": "https://www.nationalgeographic.com/animals/article/new-species-discovered-amazon-rainforest",
+      "content": "Scientists have identified several new species of plants and animals in the Amazon, highlighting the importance of biodiversity conservation.",
+      "publishedAt": "2023-05-08T09:15:00Z",
+      "hashtags": "#Amazon #Biodiversity #Conservation"
+    },
+    {
+      "id": 4,
+      "feedId": 4,
+      "title": "Global Climate Summit Reaches Landmark Agreement",
+      "url": "https://www.bbc.com/news/science-environment-12345678",
+      "content": "World leaders have agreed on ambitious targets to reduce carbon emissions and combat climate change in a historic summit.",
+      "publishedAt": "2023-05-07T18:20:00Z",
+      "hashtags": "#ClimateChange #GlobalSummit #CarbonEmissions"
+    },
+    {
+      "id": 5,
+      "feedId": 5,
+      "title": "NASA's Artemis Program: Next Steps for Lunar Exploration",
+      "url": "https://www.nasa.gov/press-release/artemis-program-next-steps-lunar-exploration",
+      "content": "NASA outlines the upcoming missions and goals for the Artemis program, aiming to return humans to the Moon and establish a permanent presence.",
+      "publishedAt": "2023-05-06T14:10:00Z",
+      "hashtags": "#NASA #Artemis #LunarExploration"
+    }
+  ],
+  "organizations": [
+    {
+      "id": 1,
+      "name": "SpaceX",
+      "website": "https://www.spacex.com",
+      "category": "Aerospace"
+    },
+    {
+      "id": 2,
+      "name": "OpenAI",
+      "website": "https://www.openai.com",
+      "category": "Artificial Intelligence"
+    },
+    {
+      "id": 3,
+      "name": "World Wildlife Fund",
+      "website": "https://www.worldwildlife.org",
+      "category": "Conservation"
+    },
+    {
+      "id": 4,
+      "name": "United Nations",
+      "website": "https://www.un.org",
+      "category": "International Organization"
+    },
+    {
+      "id": 5,
+      "name": "NASA",
+      "website": "https://www.nasa.gov",
+      "category": "Space Exploration"
+    }
+  ]
+}
