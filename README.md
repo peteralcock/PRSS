@@ -132,3 +132,96 @@ With this setup, you'll have a more maintainable and production-ready frontend, 
 Remember to handle CORS properly in your Sinatra backend if you're running the frontend and backend on different domains or ports in production.
 
 This setup gives you the flexibility to develop your frontend independently while still integrating seamlessly with your Sinatra backend.
+
+
+
+## Python Development
+
+Here's an explanation of each package:
+
+Flask: The core web framework we're using.
+Flask-SQLAlchemy: An extension for Flask that adds support for SQLAlchemy, our ORM.
+Flask-CORS: An extension for handling Cross Origin Resource Sharing (CORS), making cross-origin AJAX possible.
+celery: For handling background tasks and scheduled jobs.
+feedparser: A library for parsing RSS and Atom feeds.
+redis: Used as a message broker for Celery.
+gunicorn: A production-ready WSGI server for deploying Flask applications.
+
+To use this requirements.txt file:
+
+Save it in the same directory as your app.py file.
+Install all the requirements using pip:
+Copypip install -r requirements.txt
+This command will install all the listed packages and their dependencies.
+If you're using a virtual environment (which is recommended), make sure to activate it before installing the requirements.
+
+Note: The versions specified in the requirements.txt file are the latest stable versions as of my knowledge cutoff. You may want to update these to the latest versions available when you're setting up your project, or remove the version specifications entirely to always get the latest versions (though this can sometimes lead to compatibility issues).
+For development purposes, you might also want to add:
+Copypython-dotenv==1.0.0
+This package allows you to use a .env file to manage environment variables, which can be useful for managing configuration across different environments (development, staging, production).
+Remember, if you add any new Python packages to your project in the future, make sure to update the requirements.txt file. You can do this manually, or by running:
+Copypip freeze > requirements.txt
+This command will update the requirements.txt file with all currently installed packages in your environment.
+
+
+
+
+## NodeJS Development
+
+To set up and run this Node.js version of the PR Monitoring application:
+
+1. Make sure you have Node.js and npm installed on your system.
+
+2. Create a new directory for your project and navigate into it:
+
+   ```
+   mkdir pr-monitoring-nodejs && cd pr-monitoring-nodejs
+   ```
+
+3. Create the `app.js` and `package.json` files with the content provided above.
+
+4. Install the dependencies:
+
+   ```
+   npm install
+   ```
+
+5. Create a `public` folder in the same directory as `app.js` and place your React frontend files there (index.html and any other static assets).
+
+6. Start the application:
+
+   ```
+   npm start
+   ```
+
+   Or for development with auto-restart on file changes:
+
+   ```
+   npm run dev
+   ```
+
+This Node.js version provides similar functionality to the Ruby/Sinatra version:
+
+- It uses Sequelize for database operations (equivalent to Sequel in the Ruby version).
+- Bull is used for background tasks (equivalent to Sidekiq).
+- The API endpoints (`/api/feeds`, `/api/entries`, `/api/search`) function the same way as in the Sinatra version.
+- It serves the React frontend from the `public` folder.
+- The feed fetching is scheduled to run every hour using `setInterval`.
+
+Main differences and considerations:
+
+1. Database: It uses SQLite by default. For production, you might want to switch to PostgreSQL or MySQL.
+
+2. ORM: Sequelize is used instead of Sequel. The models (Feed and Entry) are defined using Sequelize's `define` method.
+
+3. Background Jobs: Bull is used for background job processing. The feed processing logic is defined in the `feedQueue.process` function.
+
+4. CORS: The `cors` middleware is used to handle Cross-Origin Resource Sharing.
+
+5. Feed Parsing: We're using the `feedparser` package to parse RSS feeds.
+
+6. Scheduling: A simple `setInterval` is used for scheduling. For more complex scheduling needs, you might want to use a package like `node-cron`.
+
+Remember to adjust the React frontend to point to these new Node.js endpoints (they should be the same as before, just served by Express instead of Sinatra).
+
+This Node.js version should be a drop-in replacement for the Sinatra version, providing the same functionality with a JavaScript backend.
