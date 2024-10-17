@@ -1,0 +1,22 @@
+{
+  "name": "pr-monitoring",
+  "version": "1.0.0",
+  "description": "PR Monitoring Dashboard",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^5.0.2",
+    "bull": "^3.22.0",
+    "cors": "^2.8.5",
+    "feedparser": "^2.2.10",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
