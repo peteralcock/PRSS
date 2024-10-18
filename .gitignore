@@ -17,31 +17,31 @@ vendor/bundle
 /tmp/
 
 # Python-specific ignores
-python/__pycache__
+src/python/__pycache__
 python/*.py[cod]
-python/*$py.class
-python/.Python
-python/build/
-python/develop-eggs/
-python/dist/
-python/downloads/
-python/eggs/
-python/.eggs/
-python/lib/
-python/lib64/
-python/parts/
-python/sdist/
-python/var/
-python/wheels/
+src/python/*$py.class
+src/python/.Python
+src/python/build/
+src/python/develop-eggs/
+src/python/dist/
+src/python/downloads/
+src/python/eggs/
+src/python/.eggs/
+src/python/lib/
+src/python/lib64/
+src/python/parts/
+src/python/sdist/
+src/python/var/
+src/python/wheels/
 python/*.egg-info/
-python/.installed.cfg
+src/python/.installed.cfg
 python/*.egg
-python/MANIFEST
+src/python/MANIFEST
 
 # Node-specific ignores
-nodejs/node_modules
-nodejs/npm-debug.log
-nodejs/yarn-error.log
+src/nodejs/node_modules
+src/nodejs/npm-debug.log
+src/nodejs/yarn-error.log
 
 # Environment variables
 .env
