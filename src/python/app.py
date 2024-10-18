@@ -89,9 +89,9 @@ def get_entries():
     } for entry in entries])
 
 # Initialize the database (only run once)
-@app.before_first_request
-def create_tables():
-    db.create_all()
+# @app.before_first_request
+# def create_tables():
+#   db.create_all()
 
 # Main entry point to run the app
 if __name__ == '__main__':
