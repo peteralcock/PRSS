@@ -1,26 +1,25 @@
-# Use an official Python runtime as the parent image
+# Use the official Python image from the Docker Hub
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Copy requirements.txt into the container
+COPY requirements.txt .
 
-# Copy the requirements file into the container
-COPY requirements.txt ./
-
-# Install Python dependencies
+# Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the rest of the app files into the container
 COPY . .
 
-# Expose the port the app runs on
+# Expose the port that Flask will run on
 EXPOSE 5000
 
-# Use gunicorn as the entrypoint
-ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Define the environment variable for Flask
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
+# Run the Flask app
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+
