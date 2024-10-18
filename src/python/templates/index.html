@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Monitoring Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.7.2/Recharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const API_BASE_URL = 'http://localhost:4567/api';
+
+        const Dashboard = () => {
+          const [feeds, setFeeds] = React.useState([]);
+          const [entries, setEntries] = React.useState([]);
+          const [newFeed, setNewFeed] = React.useState({ title: '', url: '', category: '' });
+
+          React.useEffect(() => {
+            // Fetch feeds from Sinatra API when the component mounts
+            fetch(`${API_BASE_URL}/feeds`)
+              .then((response) => response.json())
+              .then((data) => setFeeds(data));
+
+            // Fetch entries from Sinatra API when the component mounts
+            fetch(`${API_BASE_URL}/entries`)
+              .then((response) => response.json())
+              .then((data) => setEntries(data));
+          }, []);
+
+          const handleFeedSubmit = (e) => {
+            e.preventDefault();
+            fetch(`${API_BASE_URL}/feeds`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(newFeed),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  setFeeds([...feeds, newFeed]);
+                  setNewFeed({ title: '', url: '', category: '' });
+                }
+              });
+          };
+
+          return (
+            <div className="p-6 bg-gray-100 min-h-screen">
+              <h1 className="text-3xl font-bold mb-6">PRSS: Press Release Monitor</h1>
+              <form onSubmit={handleFeedSubmit} className="mb-6">
+                <input
+                  type="text"
+                  placeholder="Feed Title"
+                  value={newFeed.title}
+                  onChange={(e) => setNewFeed({ ...newFeed, title: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Feed URL"
+                  value={newFeed.url}
+                  onChange={(e) => setNewFeed({ ...newFeed, url: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Category"
+                  value={newFeed.category}
+                  onChange={(e) => setNewFeed({ ...newFeed, category: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  <lucide.Plus className="inline-block mr-2 h-4 w-4" /> Add Feed
+                </button>
+              </form>
+
+              <h2 className="text-2xl font-semibold mb-4">Feeds</h2>
+              <ul className="list-disc pl-5 mb-6">
+                {feeds.map((feed, index) => (
+                  <li key={index}>{`${feed.title} (${feed.category}): ${feed.url}`}</li>
+                ))}
+              </ul>
+
+              <h2 className="text-2xl font-semibold mb-4">Latest Entries</h2>
+              <ul className="list-disc pl-5 mb-6">
+                {entries.map((entry, index) => (
+                  <li key={index} className="mb-4">
+                    <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      {entry.title}
+                    </a>
+                    <p>{entry.content}</p>
+                    <p>Published At: {new Date(entry.published_at).toLocaleString()}</p>
+                    <p>Hashtags: {entry.hashtags}</p>
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="text-2xl font-semibold mb-4">Entries Analysis</h2>
+              <div className="h-80 mb-6">
+                <Recharts.ResponsiveContainer width="100%" height="100%">
+                  <Recharts.BarChart
+                    data={entries.map((entry) => ({ name: entry.title, hashtags: entry.hashtags.split(' ').length }))}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <Recharts.CartesianGrid strokeDasharray="3 3" />
+                    <Recharts.XAxis dataKey="name" />
+                    <Recharts.YAxis />
+                    <Recharts.Tooltip />
+                    <Recharts.Legend />
+                    <Recharts.Bar dataKey="hashtags" fill="#8884d8" />
+                  </Recharts.BarChart>
+                </Recharts.ResponsiveContainer>
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: ""
     ports:
       - "3000:3000"
     environment:
@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   worker:
-    build: .
+    build: ""
     command: node worker.js
     environment:
       - NODE_ENV=production
