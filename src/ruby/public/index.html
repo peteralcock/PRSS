@@ -14,184 +14,109 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const API_BASE_URL = 'http://localhost:4567/api';
+        const API_BASE_URL = 'http://localhost:5000/api';
 
         const Dashboard = () => {
           const [feeds, setFeeds] = React.useState([]);
           const [entries, setEntries] = React.useState([]);
-          const [sortColumn, setSortColumn] = React.useState('title');
-          const [sortDirection, setSortDirection] = React.useState('asc');
-          const [searchTerm, setSearchTerm] = React.useState('');
           const [newFeed, setNewFeed] = React.useState({ title: '', url: '', category: '' });
 
           React.useEffect(() => {
-            fetchData();
+            // Fetch feeds from Flask API when the component mounts
+            fetch(`${API_BASE_URL}/feeds`)
+              .then((response) => response.json())
+              .then((data) => setFeeds(data));
+
+            // Fetch entries from Flask API when the component mounts
+            fetch(`${API_BASE_URL}/entries`)
+              .then((response) => response.json())
+              .then((data) => setEntries(data));
           }, []);
 
-          const fetchData = async () => {
-            try {
-              const feedsData = await fetch(`${API_BASE_URL}/feeds`).then(res => res.json());
-              const entriesData = await fetch(`${API_BASE_URL}/entries`).then(res => res.json());
-              setFeeds(feedsData);
-              setEntries(entriesData);
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          };
-
-          const handleSort = (column) => {
-            if (column === sortColumn) {
-              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-            } else {
-              setSortColumn(column);
-              setSortDirection('asc');
-            }
-          };
-
-          const sortedEntries = React.useMemo(() => {
-            return [...entries].sort((a, b) => {
-              if (a[sortColumn] < b[sortColumn]) return sortDirection === 'asc' ? -1 : 1;
-              if (a[sortColumn] > b[sortColumn]) return sortDirection === 'asc' ? 1 : -1;
-              return 0;
-            });
-          }, [entries, sortColumn, sortDirection]);
-
-          const feedCounts = feeds.reduce((acc, feed) => {
-            acc[feed.category] = (acc[feed.category] || 0) + 1;
-            return acc;
-          }, {});
-
-          const chartData = Object.entries(feedCounts).map(([category, count]) => ({
-            category,
-            count,
-          }));
-
-          const handleSearch = async () => {
-            try {
-              const results = await fetch(`${API_BASE_URL}/search?q=${searchTerm}`).then(res => res.json());
-              setEntries(results);
-            } catch (error) {
-              console.error('Error searching entries:', error);
-            }
-          };
-
-          const handleAddFeed = async () => {
-            try {
-              const response = await fetch(`${API_BASE_URL}/feeds`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newFeed),
+          const handleFeedSubmit = (e) => {
+            e.preventDefault();
+            fetch(`${API_BASE_URL}/feeds`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(newFeed),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  setFeeds([...feeds, newFeed]);
+                  setNewFeed({ title: '', url: '', category: '' });
+                }
               });
-              if (response.ok) {
-                fetchData();
-                setNewFeed({ title: '', url: '', category: '' });
-              } else {
-                throw new Error('Failed to add feed');
-              }
-            } catch (error) {
-              console.error('Error adding feed:', error);
-            }
           };
 
           return (
             <div className="p-6 bg-gray-100 min-h-screen">
-              <h1 className="text-3xl font-bold mb-6">PR Monitoring Dashboard</h1>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Feed Distribution</h2>
-                  <div className="h-80">
-                    <Recharts.ResponsiveContainer width="100%" height="100%">
-                      <Recharts.BarChart data={chartData}>
-                        <Recharts.CartesianGrid strokeDasharray="3 3" />
-                        <Recharts.XAxis dataKey="category" />
-                        <Recharts.YAxis />
-                        <Recharts.Tooltip />
-                        <Recharts.Legend />
-                        <Recharts.Bar dataKey="count" fill="#8884d8" />
-                      </Recharts.BarChart>
-                    </Recharts.ResponsiveContainer>
-                  </div>
-                </div>
-                
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Recent Entries</h2>
-                  <ul className="list-disc pl-5">
-                    {entries.slice(0, 5).map((entry, index) => (
-                      <li key={index} className="mb-2">
-                        <a href={entry.url} target="_blank" rel="noopener noreferrer" className="font-semibold">{entry.title}</a>
-                        <p className="text-sm text-gray-600">Hashtags: {entry.hashtags}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="bg-white p-4 rounded-lg shadow mb-6">
-                <h2 className="text-xl font-semibold mb-4">Add New Feed</h2>
-                <div className="flex space-x-4">
-                  <input
-                    className="flex-1 px-3 py-2 border rounded"
-                    placeholder="Title"
-                    value={newFeed.title}
-                    onChange={(e) => setNewFeed({...newFeed, title: e.target.value})}
-                  />
-                  <input
-                    className="flex-1 px-3 py-2 border rounded"
-                    placeholder="URL"
-                    value={newFeed.url}
-                    onChange={(e) => setNewFeed({...newFeed, url: e.target.value})}
-                  />
-                  <input
-                    className="flex-1 px-3 py-2 border rounded"
-                    placeholder="Category"
-                    value={newFeed.category}
-                    onChange={(e) => setNewFeed({...newFeed, category: e.target.value})}
-                  />
-                  <button onClick={handleAddFeed} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center">
-                    <lucide.Plus className="mr-2 h-4 w-4" /> Add Feed
-                  </button>
-                </div>
-              </div>
-              
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Entries</h2>
-                <div className="mb-4 flex justify-between items-center">
-                  <input
-                    className="px-3 py-2 border rounded mr-2"
-                    placeholder="Search entries..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <button onClick={handleSearch} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2">Search</button>
-                  <button onClick={fetchData} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center">
-                    <lucide.RefreshCcw className="mr-2 h-4 w-4" /> Refresh
-                  </button>
-                </div>
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-2 text-left cursor-pointer" onClick={() => handleSort('title')}>
-                        Title <lucide.ArrowUpDown className="inline-block h-4 w-4" />
-                      </th>
-                      <th className="p-2 text-left cursor-pointer" onClick={() => handleSort('published_at')}>
-                        Published At <lucide.ArrowUpDown className="inline-block h-4 w-4" />
-                      </th>
-                      <th className="p-2 text-left">Hashtags</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedEntries.map((entry, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className="p-2">
-                          <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{entry.title}</a>
-                        </td>
-                        <td className="p-2">{new Date(entry.published_at).toLocaleString()}</td>
-                        <td className="p-2">{entry.hashtags}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <h1 className="text-3xl font-bold mb-6">PRSS: Press Release Monitor</h1>
+              <form onSubmit={handleFeedSubmit} className="mb-6">
+                <input
+                  type="text"
+                  placeholder="Feed Title"
+                  value={newFeed.title}
+                  onChange={(e) => setNewFeed({ ...newFeed, title: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Feed URL"
+                  value={newFeed.url}
+                  onChange={(e) => setNewFeed({ ...newFeed, url: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Category"
+                  value={newFeed.category}
+                  onChange={(e) => setNewFeed({ ...newFeed, category: e.target.value })}
+                  className="px-3 py-2 border rounded mr-2"
+                />
+                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  <lucide.Plus className="inline-block mr-2 h-4 w-4" /> Add Feed
+                </button>
+              </form>
+
+              <h2 className="text-2xl font-semibold mb-4">Feeds</h2>
+              <ul className="list-disc pl-5 mb-6">
+                {feeds.map((feed, index) => (
+                  <li key={index}>{`${feed.title} (${feed.category}): ${feed.url}`}</li>
+                ))}
+              </ul>
+
+              <h2 className="text-2xl font-semibold mb-4">Latest Entries</h2>
+              <ul className="list-disc pl-5 mb-6">
+                {entries.map((entry, index) => (
+                  <li key={index} className="mb-4">
+                    <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                      {entry.title}
+                    </a>
+                    <p>{entry.content}</p>
+                    <p>Published At: {new Date(entry.published_at).toLocaleString()}</p>
+                    <p>Hashtags: {entry.hashtags}</p>
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="text-2xl font-semibold mb-4">Entries Analysis</h2>
+              <div className="h-80 mb-6">
+                <Recharts.ResponsiveContainer width="100%" height="100%">
+                  <Recharts.BarChart
+                    data={entries.map((entry) => ({ name: entry.title, hashtags: entry.hashtags.split(' ').length }))}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <Recharts.CartesianGrid strokeDasharray="3 3" />
+                    <Recharts.XAxis dataKey="name" />
+                    <Recharts.YAxis />
+                    <Recharts.Tooltip />
+                    <Recharts.Legend />
+                    <Recharts.Bar dataKey="hashtags" fill="#8884d8" />
+                  </Recharts.BarChart>
+                </Recharts.ResponsiveContainer>
               </div>
             </div>
           );
@@ -201,4 +126,3 @@
     </script>
 </body>
 </html>
-
