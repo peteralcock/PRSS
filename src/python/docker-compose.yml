@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    build: ""
+    build: .
     ports:
       - "5000:5000"
     environment:
@@ -12,42 +12,47 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./:/usr/src/app
+      - .:/usr/src/app
       - db-data:/usr/src/app/instance
     depends_on:
       - redis
+    restart: always  # Ensure the service restarts automatically if it crashes
 
   celery_worker:
-    build: ""
+    build: .
     command: celery -A app.celery worker --loglevel=info
     environment:
       - DATABASE_URL=sqlite:////usr/src/app/pr_monitoring.db
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./:/usr/src/app
+      - .:/usr/src/app
       - db-data:/usr/src/app/instance
     depends_on:
       - redis
+    restart: always  # Automatically restart if the worker crashes
 
   celery_beat:
-    build: ""
+    build: .
     command: celery -A app.celery beat --loglevel=info
     environment:
       - DATABASE_URL=sqlite:////usr/src/app/pr_monitoring.db
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - ./:/usr/src/app
+      - .:/usr/src/app
       - db-data:/usr/src/app/instance
     depends_on:
       - redis
+    restart: always  # Automatically restart Celery Beat if it crashes
 
   redis:
     image: redis:6-alpine
     volumes:
       - redis-data:/data
+    restart: always  # Redis restarts automatically in case of failure
 
 volumes:
   db-data:
   redis-data:
+
