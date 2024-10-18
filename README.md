@@ -1,8 +1,7 @@
-# PRSS
-Extract press releases from your competitors and analyze them with AI to generate more competitive marketing and PR strategies.
+# PRSS: Press Release Monitor
+Aggregate RSS feeds and extract press releases from your competitors in order to automatically analyze them with AI to generate competitive marketing/PR strategies for startups and influencers.
 
-
-# PR Monitoring Dashboard
+![Screenshot](/screenshot.jpg?raw=true "Preview")
 
 This application is a full-stack solution for monitoring PR feeds. It includes a Sinatra backend API, Sidekiq workers for background processing, and a React frontend.
 
@@ -151,16 +150,18 @@ To use this requirements.txt file:
 
 Save it in the same directory as your app.py file.
 Install all the requirements using pip:
-Copypip install -r requirements.txt
+pip install -r requirements.txt
 This command will install all the listed packages and their dependencies.
 If you're using a virtual environment (which is recommended), make sure to activate it before installing the requirements.
 
 Note: The versions specified in the requirements.txt file are the latest stable versions as of my knowledge cutoff. You may want to update these to the latest versions available when you're setting up your project, or remove the version specifications entirely to always get the latest versions (though this can sometimes lead to compatibility issues).
-For development purposes, you might also want to add:
-Copypython-dotenv==1.0.0
-This package allows you to use a .env file to manage environment variables, which can be useful for managing configuration across different environments (development, staging, production).
+
+
+python-dotenv allows you to use a .env file to manage environment variables, which can be useful for managing configuration across different environments (development, staging, production).
+
 Remember, if you add any new Python packages to your project in the future, make sure to update the requirements.txt file. You can do this manually, or by running:
-Copypip freeze > requirements.txt
+
+pip freeze > requirements.txt
 This command will update the requirements.txt file with all currently installed packages in your environment.
 
 
