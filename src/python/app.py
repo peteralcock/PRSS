@@ -1,165 +1,99 @@
-import os
-
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from celery import Celery
 import feedparser
-from datetime import datetime
-import re
 
-app = Flask(__name__, static_folder='public')
-CORS(app)
+# Initialize Flask app
+app = Flask(__name__)
+
+# Configure app with database and Celery settings
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pr_monitoring.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['CELERY_BROKER_URL'] = 'redis://redis:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://redis:6379/0'
 
+# Initialize extensions
 db = SQLAlchemy(app)
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
+CORS(app)
 
-# Celery schedule configuration
-from celery.schedules import crontab
+# Initialize Celery
+def make_celery(app):
+    celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
+                    broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    return celery
 
-app.config.update(
-    CELERYBEAT_SCHEDULE={
-        'fetch-feeds-every-hour': {
-            'task': 'app.schedule_feed_fetching',
-            'schedule': crontab(minute=0, hour='*')
-        },
-    }
-)
+celery = make_celery(app)
 
-
-# Models
+# Database models
 class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(200), nullable=False)
-    category = db.Column(db.String(100))
-
+    category = db.Column(db.String(100), nullable=False)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     url = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text)
-    published_at = db.Column(db.DateTime)
-    hashtags = db.Column(db.String(200))
+    content = db.Column(db.Text, nullable=True)
+    published_at = db.Column(db.String(100), nullable=True)
+    hashtags = db.Column(db.String(200), nullable=True)
 
-
-# Celery tasks
+# Celery task for fetching new entries
 @celery.task
-def fetch_feed(feed_id):
-    with app.app_context():
-        feed = Feed.query.get(feed_id)
-        if not feed:
-            return
+def fetch_entries(feed_id):
+    feed = Feed.query.get(feed_id)
+    feed_data = feedparser.parse(feed.url)
+    for entry in feed_data.entries:
+        new_entry = Entry(
+            title=entry.title,
+            url=entry.link,
+            content=entry.get('summary', ''),
+            published_at=entry.get('published', ''),
+            hashtags='#'.join([tag['term'] for tag in entry.tags]) if 'tags' in entry else ''
+        )
+        db.session.add(new_entry)
+    db.session.commit()
 
-        parsed_feed = feedparser.parse(feed.url)
+# API to get all feeds
+@app.route('/api/feeds', methods=['GET'])
+def get_feeds():
+    feeds = Feed.query.all()
+    return jsonify([{'title': feed.title, 'url': feed.url, 'category': feed.category} for feed in feeds])
 
-        for entry in parsed_feed.entries:
-            existing_entry = Entry.query.filter_by(url=entry.link).first()
+# API to add a new feed
+@app.route('/api/feeds', methods=['POST'])
+def add_feed():
+    data = request.json
+    new_feed = Feed(title=data['title'], url=data['url'], category=data['category'])
+    db.session.add(new_feed)
+    db.session.commit()
+    
+    # Schedule task to fetch entries from the new feed
+    fetch_entries.delay(new_feed.id)
+    
+    return jsonify({'success': True, 'feed': {'title': new_feed.title, 'url': new_feed.url, 'category': new_feed.category}}), 201
 
-            if existing_entry:
-                existing_entry.title = entry.title
-                existing_entry.content = entry.summary
-                existing_entry.published_at = datetime(*entry.published_parsed[:6])
-            else:
-                new_entry = Entry(
-                    feed_id=feed.id,
-                    title=entry.title,
-                    url=entry.link,
-                    content=entry.summary,
-                    published_at=datetime(*entry.published_parsed[:6]),
-                    hashtags=generate_hashtags(entry.title + " " + entry.summary)
-                )
-                db.session.add(new_entry)
-
-        db.session.commit()
-
-
-def generate_hashtags(text):
-    words = re.findall(r'\w+', text.lower())
-    return ' '.join(f'#{word}' for word in set(words) if len(word) > 5)
-
-
-@celery.task
-def schedule_feed_fetching():
-    with app.app_context():
-        feeds = Feed.query.all()
-        for feed in feeds:
-            fetch_feed.delay(feed.id)
-
-
-# API routes
-@app.route('/api/feeds', methods=['GET', 'POST'])
-def handle_feeds():
-    if request.method == 'GET':
-        feeds = Feed.query.all()
-        return jsonify([{'id': f.id, 'title': f.title, 'url': f.url, 'category': f.category} for f in feeds])
-    elif request.method == 'POST':
-        data = request.json
-        new_feed = Feed(title=data['title'], url=data['url'], category=data['category'])
-        db.session.add(new_feed)
-        db.session.commit()
-        fetch_feed.delay(new_feed.id)
-        return jsonify({'success': True, 'id': new_feed.id})
-
-
-@app.route('/api/entries')
+# API to get all entries
+@app.route('/api/entries', methods=['GET'])
 def get_entries():
-    entries = Entry.query.order_by(Entry.published_at.desc()).limit(20).all()
-    return jsonify([
-        {
-            'id': e.id,
-            'title': e.title,
-            'url': e.url,
-            'content': e.content,
-            'published_at': e.published_at.isoformat(),
-            'hashtags': e.hashtags
-        } for e in entries
-    ])
+    entries = Entry.query.all()
+    return jsonify([{
+        'title': entry.title,
+        'url': entry.url,
+        'content': entry.content,
+        'published_at': entry.published_at,
+        'hashtags': entry.hashtags
+    } for entry in entries])
 
+# Initialize the database (only run once)
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
-@app.route('/api/search')
-def search_entries():
-    query = request.args.get('q', '')
-    entries = Entry.query.filter(
-        (Entry.title.like(f'%{query}%')) | (Entry.content.like(f'%{query}%'))
-    ).all()
-    return jsonify([
-        {
-            'id': e.id,
-            'title': e.title,
-            'url': e.url,
-            'content': e.content,
-            'published_at': e.published_at.isoformat(),
-            'hashtags': e.hashtags
-        } for e in entries
-    ])
-
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
-
-
+# Main entry point to run the app
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-
-# To start Celery worker, use the following commands:
-# celery -A app.celery worker --loglevel=info
-# celery -A app.celery beat --loglevel=info
-
-# Gunicorn command for production deployment:
-# gunicorn -w 4 -b 0.0.0.0:5000 app:appcelery -A app.celery worker --loglevel=info
+    app.run(host='0.0.0.0', port=5000)
 
