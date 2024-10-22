@@ -1,7 +1,7 @@
 # Git
 .git
 .gitignore
-
+./src/python/instance/pr_monitoring.db
 # Ruby-specific ignores
 .bundle
 vendor/bundle

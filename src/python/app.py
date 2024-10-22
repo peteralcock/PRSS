@@ -10,8 +10,8 @@ app = Flask(__name__)
 # Configure app with database and Celery settings
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pr_monitoring.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['CELERY_BROKER_URL'] = 'redis://redis:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://redis:6379/0'
+app.config['CELERY_BROKER_URL'] = 'redis://127.0.0.1:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://127.0.0.1:6379/0'
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -95,5 +95,5 @@ def get_entries():
 
 # Main entry point to run the app
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)
 
